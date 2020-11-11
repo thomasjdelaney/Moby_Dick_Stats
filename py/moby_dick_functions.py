@@ -1,5 +1,5 @@
 """
-Functions that are useful for the project.
+Functions and globals that are useful for the project.
 """
 
 def findMultiple(string, substring):
@@ -34,3 +34,13 @@ def extractChapterTitleDict(moby_dick_text):
             num_to_chap_title[current_key] = num_to_chap_title[current_key] + word + ' '
     num_to_chap_title = {k:v.strip() for k,v in num_to_chap_title.items()}
     return num_to_chap_title
+
+def getAllSectionTitles(moby_dick_text):
+    """
+    For getting a list of all the section titles.
+    Arguments:  moby_dick_text, str, the text
+    Returns:    list of str
+    """
+    num_to_chap_title = extractChapterTitleDict(moby_dick_text)
+    all_section_titles = ['CONTENTS', 'ETYMOLOGY', 'EXTRACTS'] + list(num_to_chap_title.values()) + ['Epilogue']
+    return all_section_titles
