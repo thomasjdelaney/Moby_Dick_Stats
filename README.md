@@ -8,7 +8,15 @@ Python 3.7 >
 
 ## Downloading & Extracting the Text
 
-The ```download_and_extract_text.py``` script is used to download and extract the text of the novel into a useful format. This text is then saved in FILENAME.
+The ```py/download_and_extract_text.py``` script is used to download and extract the text of the novel into a useful format. This text is then saved in ```txt/moby_dick.txt```.
+
+## Taking measurements
+
+The ```py/moby_dick_stats.py``` script is used to extract measurements and statistics from the text.
+
+## Useful functions
+
+The functions that are used in the repo are stored in ```py/moby_dick_functions.py```
 
 ## References
 
