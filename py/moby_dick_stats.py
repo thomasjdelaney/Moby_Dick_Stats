@@ -1,7 +1,7 @@
 """
 For loading in the text and extracting some interesting stats and networks.
 """
-import os, sys, argparse
+import os, sys, argparse, re
 import datetime as dt
 import numpy as np
 from moby_dick_functions import * 
@@ -47,5 +47,16 @@ while novel_text.find('  ') != -1:
 all_words = novel_text.split(' ')
 unique_words, word_counts = np.unique(all_words, return_counts=True)
 
+# delete non-words
+to_be_deleted_inds = [2]
+to_be_deleted_inds = to_be_deleted_inds + list(np.flatnonzero([None != re.search(r'^\$', word) for word in unique_words]))
+to_be_deleted_inds = to_be_deleted_inds + [i for i,word in enumerate(unique_words) if word.isnumeric()]
+to_be_deleted_inds = to_be_deleted_inds + [i for i,word in enumerate(unique_words) if word.lower().replace('th','').replace('st','').replace('nd','').replace('d','').isnumeric()]
+
+
 
 # TODO: Unit test file
+#       Write a proper function for cleaning up text
+#       Clean up all caps words
+#       Extract proper nouns
+#       get list of all characters from somewhere.
