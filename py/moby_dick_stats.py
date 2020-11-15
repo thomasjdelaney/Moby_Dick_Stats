@@ -1,7 +1,7 @@
 """
 For loading in the text and extracting some interesting stats and networks.
 """
-import os, sys, argparse, re
+import os, sys, argparse, re, nltk
 import datetime as dt
 import numpy as np
 from moby_dick_functions import * 
@@ -41,22 +41,25 @@ novel_text = novel_text.replace(')', '')
 novel_text = novel_text.replace("’s", '')
 novel_text = novel_text.replace("’ ", ' ')
 novel_text = novel_text.replace('—', ' ')
-novel_text = novel_text.replace('-', ' ')
+# novel_text = novel_text.replace('-', ' ')
 while novel_text.find('  ') != -1:
     novel_text = novel_text.replace('  ',  ' ')
-all_words = novel_text.split(' ')
-unique_words, word_counts = np.unique(all_words, return_counts=True)
+# Text is clean here, put the above in a function.
+
+# From here downwards can go in the counting function. (May have to find character names differently, maybe not)
+all_words = nltk.word_tokenize(novel_text)
 
 # delete non-words
-to_be_deleted_inds = [2]
-to_be_deleted_inds = to_be_deleted_inds + list(np.flatnonzero([None != re.search(r'^\$', word) for word in unique_words]))
-to_be_deleted_inds = to_be_deleted_inds + [i for i,word in enumerate(unique_words) if word.isnumeric()]
-to_be_deleted_inds = to_be_deleted_inds + [i for i,word in enumerate(unique_words) if word.lower().replace('th','').replace('st','').replace('nd','').replace('d','').isnumeric()]
+# use re to match for strings that contain only number and letters. 
 
-
+word_freq_distn = nltk.FreqDist(all_words)
+unique_words = list(word_freq_distn)
 
 # TODO: Unit test file
 #       Write a proper function for cleaning up text
 #       Clean up all caps words
 #       Extract proper nouns
 #       get list of all characters from somewhere.
+#       Deal with 'White Whale' phrase
+#       Link for understanding 'part-of-speech' tags: https://www.guru99.com/pos-tagging-chunking-nltk.html
+

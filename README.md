@@ -5,10 +5,21 @@ A project for doing some statistical analysis on the text of the novel 'Moby Dic
 ## Requirements
 
 Python 3.7 > 
+numpy
+re
+nltk
+
+## TODO
+
+* Account for characters having more than one name
 
 ## Downloading & Extracting the Text
 
 The ```py/download_and_extract_text.py``` script is used to download and extract the text of the novel into a useful format. This text is then saved in ```txt/moby_dick.txt```.
+
+## 'Part-of-Speech' Tagging
+
+The ```nltk``` package is used for POS tagging the text. The tagging codes can be found [here](https://www.guru99.com/pos-tagging-chunking-nltk.html).
 
 ## Taking measurements
 
