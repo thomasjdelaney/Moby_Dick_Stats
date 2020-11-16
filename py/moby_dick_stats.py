@@ -25,41 +25,36 @@ contents_text = getSpecialSectionText(moby_dick_text, 'CONTENTS')
 epilogue_text = getSpecialSectionText(moby_dick_text, 'Epilogue')
 novel_text = getNovelText(moby_dick_text)
 
-# try to count how many times each word is used. Need to do some formatting first
-# might need to extract all the proper nouns also
-novel_text = novel_text.replace('“', '')
-novel_text = novel_text.replace('”', '')
-novel_text = novel_text.replace(';', '')
-novel_text = novel_text.replace(',', '')
-novel_text = novel_text.replace('.', '')
-novel_text = novel_text.replace('!', '')
-novel_text = novel_text.replace('?', '')
-novel_text = novel_text.replace(':', '')
-novel_text = novel_text.replace('*', '')
-novel_text = novel_text.replace('(', '')
-novel_text = novel_text.replace(')', '')
-novel_text = novel_text.replace("’s", '')
-novel_text = novel_text.replace("’ ", ' ')
-novel_text = novel_text.replace('—', ' ')
-# novel_text = novel_text.replace('-', ' ')
-while novel_text.find('  ') != -1:
-    novel_text = novel_text.replace('  ',  ' ')
-# Text is clean here, put the above in a function.
+def cleanText(text_to_clean):
+    """
+    For taking in some text and cleaning it up, i.e. removing parenthesis, question marks and so on.
+    Arguments:  text_to_clean
+    Returns:    the cleaned up text, all in one string
+    """
+    substrs_to_remove = ['“','”',';',',','.','!','?',':','*','(',')',"’s"]
+    substrs_to_replace = ["’ ", '—']
+    for to_remove in substrs_to_remove:
+        text_to_clean = text_to_clean.replace(to_remove, '')
+    for to_replace in substrs_to_replace:
+        text_to_clean = text_to_clean.replace(to_replace, ' ')
+    while text_to_clean.find('  ') != -1:
+        text_to_clean = text_to_clean.replace('  ',  ' ')
+    return text_to_clean
+
+novel_text = cleanText(novel_text)
 
 # From here downwards can go in the counting function. (May have to find character names differently, maybe not)
 all_words = nltk.word_tokenize(novel_text)
-
-# delete non-words
-# use re to match for strings that contain only number and letters. 
-
+all_words = [word for word in all_words if re.search('^[a-zA-Z0-9]*$',  word)]
 word_freq_distn = nltk.FreqDist(all_words)
+# deal with capitalized words here
+
 unique_words = list(word_freq_distn)
+tagged_unique_words = nltk.pos_tag(unique_words)
 
 # TODO: Unit test file
-#       Write a proper function for cleaning up text
 #       Clean up all caps words
 #       Extract proper nouns
-#       get list of all characters from somewhere.
 #       Deal with 'White Whale' phrase
 #       Link for understanding 'part-of-speech' tags: https://www.guru99.com/pos-tagging-chunking-nltk.html
 
