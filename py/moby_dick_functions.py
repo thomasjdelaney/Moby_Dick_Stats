@@ -1,6 +1,8 @@
 """
 Functions and globals that are useful for the project.
 """
+import nltk, re
+import numpy as np
 
 def findMultiple(string, substring):
     """
@@ -19,7 +21,7 @@ def extractChapterTitleDict(moby_dick_text):
     """
     For extracting a dictionary of chapter number => chapter title
     Arguments:  moby_dick_text, the text
-    Returns:    num_to_chap_title, dict, 
+    Returns:    num_to_chap_title, dict,
     """
     chap_start = moby_dick_text.find('CHAPTER 1')
     chap_end = moby_dick_text.find('Epilogue')
@@ -52,7 +54,7 @@ def getSpecialSectionText(moby_dick_text, section_title):
                 section_title, the title of the sections
     Returns:    the text of the section
     """
-    title_to_end_phrase = {'CONTENTS':'Original Transcriber', 'ETYMOLOGY':'EXTRACTS. (Supplied by a', 
+    title_to_end_phrase = {'CONTENTS':'Original Transcriber', 'ETYMOLOGY':'EXTRACTS. (Supplied by a',
             'EXTRACTS':'CHAPTER 1. Loomings. Call me Ishmael.', 'Epilogue':'End of Project Gutenberg'}
     if not section_title in list(title_to_end_phrase.keys()):
         print(dt.datetime.now().isoformat() + ' ERROR: ' + 'Unrecognised special section title! Exiting.')
@@ -69,7 +71,7 @@ def getChapterText(moby_dick_text, num_to_chap_title, chapter_number_or_name, nu
                 num_to_chap_title, dictionary
                 chapter_number_or_name, int, or string
     Returns:    the text of the given chapter, in a big string
-    """ 
+    """
     special_sections = ['CONTENTS', 'ETYMOLOGY', 'EXTRACTS', 'Epilogue']
     if int == type(chapter_number_or_name):
         chapter_number = chapter_number_or_name
@@ -97,3 +99,122 @@ def getNovelText(moby_dick_text):
     novel_end = moby_dick_text.find('End of Project Gutenberg')
     return moby_dick_text[novel_start:novel_end].strip()
 
+def cleanText(text_to_clean):
+    """
+    For taking in some text and cleaning it up, i.e. removing parenthesis, question marks and so on.
+    Arguments:  text_to_clean
+    Returns:    the cleaned up text, all in one string
+    """
+    substrs_to_remove = ['“','”',';',',','.','!','?',':','*','(',')',"’s"]
+    substrs_to_replace = ["’ ", '—']
+    for to_remove in substrs_to_remove:
+        text_to_clean = text_to_clean.replace(to_remove, '')
+    for to_replace in substrs_to_replace:
+        text_to_clean = text_to_clean.replace(to_replace, ' ')
+    while text_to_clean.find('  ') != -1:
+        text_to_clean = text_to_clean.replace('  ',  ' ')
+    return text_to_clean # it is clean now
+
+def getWordFreqDistn(clean_text):
+    """
+    For counting the occurances of each word in some given clean text.
+    Arguments:  clean_text, the text in which to count words, should be clean already
+    Returns:    word_freq_distn, nltk.FreqDist object, like a dictionary but with extra nice functions.
+    """
+    all_words = nltk.word_tokenize(clean_text)
+    all_words = [word for word in all_words if re.search('^[a-zA-Z0-9]*$',  word)]
+    word_freq_distn = nltk.FreqDist(all_words)
+    # deal with capitalized words here
+    unique_words = list(word_freq_distn)
+    upper_case_repeated_words = [word for word in unique_words if (word.isupper()) and (word.lower() in unique_words)]
+    title_case_repeated_words = [word for word in unique_words if (word.istitle()) and (word.lower() in unique_words)]
+    for word in upper_case_repeated_words + title_case_repeated_words:
+        word_freq_distn[word.lower()] += word_freq_distn[word]
+        del word_freq_distn[word]
+    return word_freq_distn
+
+def getCharacterList(character_list_file):
+    """
+    For getting a list of names, of the characters.
+    Arguments:  character_list_file, string,
+    Returns:    character_list, a list of str
+    """
+    with open(character_list_file,'r') as f:
+        character_list = f.readlines()
+    return [character.replace('\n','') for character in character_list]
+
+def getCharacterCounts(clean_text, character_list):
+    """
+    For getting counts of the number of times each character is mentioned.
+    Arguments:  clean_text, the text to search for the names
+                character_list, the list of characters to search for.
+    Returns:    character_count_dict, dictionary, character_name => count
+    """
+    character_count_dict = {}
+    for character in character_list:
+        character_count_dict[character] = len(findMultiple(clean_text, character))
+    double_names = {' I ':'Ishmael', 'White Whale':'Moby Dick', 'Moby-Dick':'Moby Dick', 'Parsee':'Fedallah', 'Dough-boy':'Dough-Boy'}
+    for k,v in double_names.items():
+        if (k in list(character_count_dict)) & (v in list(character_count_dict)):
+            character_count_dict[v] += character_count_dict[k]
+            del character_count_dict[k]
+    return character_count_dict
+
+def posTagWords(words):
+    """
+    For pos tagging words. Using nltk at first, then ad-hoc fixing.
+    Arguments:  words, list or array or str
+    Returns:    pos_tagged_words, array of words, tags
+    """
+    words = np.array(words) if type(words) != np.ndarray else words
+    words_tags = np.array(nltk.pos_tag(words))
+    corrected_pos_tag_dict = {'upon':'IN',
+        'thou':'PRP',
+        'thy':'PRP$'}
+    words_to_correct = np.intersect1d(words, list(corrected_pos_tag_dict.keys()))
+    if words_to_correct.size > 0:
+        for word in words_to_correct:
+            words_tags[np.flatnonzero(words == word),1] = corrected_pos_tag_dict.get(word)
+    return words_tags
+
+def getPOSTagMeaningDict():
+    """
+    For getting the dictionary of POS code => meaning.
+    Returns: dictionary
+    """
+    pos_tag_meaning_dict = {#Abbreviation	Meaning
+        'CC':'coordinating conjunction',
+        'CD':'cardinal digit',
+        'DT':'determiner',
+        'EX':'existential there',
+        'FW':'foreign word',
+        'IN':'preposition/subordinating conjunction',
+        'JJ':'adjective',
+        'JJR':'adjective, comparative',
+        'JJS':'adjective, superlative',
+        'LS':'list market',
+        'MD':'modal',
+        'NN':'noun, singular',
+        'NNS':'noun plural',
+        'NNP':'proper noun, singular',
+        'NNPS':'proper noun, plural',
+        'PDT':'predeterminer',
+        'POS':'possessive ending',
+        'PRP':'personal pronoun',
+        'PRP$':'possessive pronoun',
+        'RB':'adverb',
+        'RBR':'adverb, comparative',
+        'RBS':'adverb, superlative',
+        'RP':'particle',
+        'TO':'infinite marker',
+        'UH':'interjection',
+        'VB':'verb',
+        'VBG':'verb gerund',
+        'VBD':'verb past tense',
+        'VBN':'verb past participle',
+        'VBP':'verb, present tense not 3rd person singular',
+        'VBZ':'verb, present tense with 3rd person singular',
+        'WDT':'wh-determiner',
+        'WP':'wh-pronoun',
+        'WRB':'wh-adverb'}
+    return pos_tag_meaning_dict

@@ -1,6 +1,8 @@
 Ahab
 Ishmael
+ I 
 Moby Dick
+Moby-Dick
 White Whale
 Mapple
 Elijah
@@ -16,10 +18,11 @@ Fedallah
 Parsee
 Pip
 Bulkington
-Dough Boy
+Dough-Boy
+Dough-boy
 Fleece
 Perth
-The Manxman
+Manxman
 Boomer
 De Deer
 Gardiner
