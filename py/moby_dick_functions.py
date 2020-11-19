@@ -121,6 +121,7 @@ def getWordFreqDistn(text_to_search):
     Arguments:  text_to_search, the text in which to count words, should be clean already
     Returns:    word_freq_distn, nltk.FreqDist object, like a dictionary but with extra nice functions.
     """
+    text_to_search = text_to_search.replace('CHAPTER','') # chapter is being over counted
     all_words = nltk.word_tokenize(text_to_search)
     all_words = [word for word in all_words if re.search('^[a-zA-Z0-9]*$',  word)]
     word_freq_distn = nltk.FreqDist(all_words)
