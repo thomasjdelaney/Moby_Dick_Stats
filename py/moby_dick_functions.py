@@ -26,15 +26,15 @@ def extractChapterTitleDict(moby_dick_text):
     chap_start = moby_dick_text.find('CHAPTER 1')
     chap_end = moby_dick_text.find('Epilogue')
     chap_string = moby_dick_text[chap_start:chap_end]
-    reduced_chap_string = chap_string.replace('CHAPTER ', '').replace('.','').strip()
+    reduced_chap_string = chap_string.replace('CHAPTER ', '').strip()
     num_to_chap_title = {}
     for i,word in enumerate(reduced_chap_string.split(' ')):
-        if word.isnumeric():
-            current_key = int(word)
+        if word.replace('.','').isnumeric():
+            current_key = int(word.replace('.',''))
             num_to_chap_title[current_key] = ''
         else:
             num_to_chap_title[current_key] = num_to_chap_title[current_key] + word + ' '
-    num_to_chap_title = {k:v.strip() for k,v in num_to_chap_title.items()}
+    num_to_chap_title = {k:v.strip()[:-1] for k,v in num_to_chap_title.items()}
     return num_to_chap_title
 
 def getAllSectionTitles(moby_dick_text):
@@ -115,13 +115,13 @@ def cleanText(text_to_clean):
         text_to_clean = text_to_clean.replace('  ',  ' ')
     return text_to_clean # it is clean now
 
-def getWordFreqDistn(clean_text):
+def getWordFreqDistn(text_to_search):
     """
     For counting the occurances of each word in some given clean text.
-    Arguments:  clean_text, the text in which to count words, should be clean already
+    Arguments:  text_to_search, the text in which to count words, should be clean already
     Returns:    word_freq_distn, nltk.FreqDist object, like a dictionary but with extra nice functions.
     """
-    all_words = nltk.word_tokenize(clean_text)
+    all_words = nltk.word_tokenize(text_to_search)
     all_words = [word for word in all_words if re.search('^[a-zA-Z0-9]*$',  word)]
     word_freq_distn = nltk.FreqDist(all_words)
     # deal with capitalized words here
@@ -143,22 +143,42 @@ def getCharacterList(character_list_file):
         character_list = f.readlines()
     return [character.replace('\n','') for character in character_list]
 
-def getCharacterCounts(clean_text, character_list):
+def getCharacterCounts(text_to_search, character_list):
     """
     For getting counts of the number of times each character is mentioned.
-    Arguments:  clean_text, the text to search for the names
+    Arguments:  text_to_search, the text to search for the names
                 character_list, the list of characters to search for.
     Returns:    character_count_dict, dictionary, character_name => count
     """
     character_count_dict = {}
     for character in character_list:
-        character_count_dict[character] = len(findMultiple(clean_text, character))
-    double_names = {' I ':'Ishmael', 'White Whale':'Moby Dick', 'Moby-Dick':'Moby Dick', 'Parsee':'Fedallah', 'Dough-boy':'Dough-Boy'}
+        character_count_dict[character] = len(findMultiple(text_to_search, character))
+    double_names = {'White Whale':'Moby Dick', 'Moby-Dick':'Moby Dick', 'Parsee':'Fedallah', 'Dough-boy':'Dough-Boy'}
     for k,v in double_names.items():
         if (k in list(character_count_dict)) & (v in list(character_count_dict)):
             character_count_dict[v] += character_count_dict[k]
             del character_count_dict[k]
+    if 'Ishmael' in list(character_count_dict):
+        character_count_dict['Ishmael'] += countFirstPersonPluralMentions(text_to_search)
     return character_count_dict
+
+def countFirstPersonPluralMentions(text_to_search):
+    """
+    For counting the number of occurances of the first person plural in the text except for mentions within dialogue.
+    Arguments:  text_to_search, str
+    Returns:    num_fpp, int
+    """
+    quote_starts = np.array(findMultiple(text_to_search, '“'))
+    quote_ends = np.array(findMultiple(text_to_search, '”'))
+    num_fpp = 0 # number of first person plurals
+    start_ind = 0
+    end_ind = text_to_search.find('“')
+    while start_ind < len(text_to_search):
+        num_fpp += len(findMultiple(text_to_search[start_ind:end_ind], ' I '))
+        num_fpp += len(findMultiple(text_to_search[start_ind:end_ind], ' I.'))
+        start_ind = quote_ends[quote_ends > end_ind].min(initial=len(text_to_search))
+        end_ind = quote_starts[quote_starts > start_ind].min(initial=len(text_to_search))
+    return num_fpp
 
 def posTagWords(words):
     """

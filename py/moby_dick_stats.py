@@ -30,10 +30,11 @@ word_freq_distn = getWordFreqDistn(novel_text)
 unique_words = list(word_freq_distn)
 character_list_with_doubles = getCharacterList(character_list_file) # contains double names
 character_count_dict = getCharacterCounts(novel_text, character_list_with_doubles)
-loomings_character_count_dict = getCharacterCounts(cleanText(loomings_text_1), character_list_with_doubles)
-biographical_character_count_dict = getCharacterCounts(cleanText(getChapterText(moby_dick_text, num_to_chap_title, 'Biographical')), character_list_with_doubles)
+loomings_character_count_dict = getCharacterCounts(loomings_text_1, character_list_with_doubles)
+biographical_character_count_dict = getCharacterCounts(getChapterText(moby_dick_text, num_to_chap_title, 'Biographical'), character_list_with_doubles)
 tagged_unique_words = posTagWords(unique_words)
 unique_nouns = tagged_unique_words[[code in ['NN','NNS'] for code in tagged_unique_words[:,1]],0]
+
 
 # pos_tag_meaning_dict = getPOSTagMeaningDict()
 # TODO: Unit test file
