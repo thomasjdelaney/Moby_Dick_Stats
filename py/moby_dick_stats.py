@@ -35,23 +35,21 @@ loomings_character_count_dict = getCharacterCounts(loomings_text_1, character_li
 biographical_character_count_dict = getCharacterCounts(getChapterText(moby_dick_text, num_to_chap_title, 'Biographical'), character_list_with_doubles)
 tagged_unique_words = posTagWords(unique_words)
 unique_nouns = tagged_unique_words[[code in ['NN','NNS'] for code in tagged_unique_words[:,1]],0]
-
-# make a bar chart of the top n most used words (already sorted)
-num_words = 20
-noun_freq_distn = {noun:word_freq_distn.get(noun) for noun in unique_nouns}
-fig,ax = plt.subplots(nrows=1, ncols=1)
-ax.bar(x=range(num_words), height=list(noun_freq_distn.values())[:num_words])
-ax.grid(axis='y', alpha=0.25)
-ax.set_xlim(-1,num_words)
-ax.set_xticks(range(num_words))
-ax.set_xticklabels(list(noun_freq_distn.keys())[:num_words])
-ax.tick_params(axis='both', labelsize='large')
-[tick.set_rotation(45) for tick in ax.get_xticklabels()]
-ax.set_ylabel('Num. occurances', fontsize='x-large')
-ax.set_xlabel('Word', fontsize='x-large')
-[ax.spines[s].set_visible(False) for s in ['top', 'right']]
-ax.set_title(str(num_words) + ' most common nouns in Moby Dick', fontsize='large')
-plt.tight_layout()
+unique_singular_nouns = tagged_unique_words[[code == 'NN' for code in tagged_unique_words[:,1]],0]
+unique_proper_nouns = tagged_unique_words[[code in ['NNP','NNPS'] for code in tagged_unique_words[:,1]],0]
+nouns_dict = {noun:word_freq_distn.get(noun) for noun in unique_nouns}
+singular_nouns_dict = {noun:word_freq_distn.get(noun) for noun in unique_singular_nouns}
+sorted_character_count_dict = {key: value for key, value in sorted(character_count_dict.items(), key=lambda item: item[1], reverse=True)}
+proper_nouns_dict = {noun:word_freq_distn.get(noun) for noun in unique_proper_nouns}
+nouns_title = '20 most common nouns in Moby Dick'
+singular_nouns_title = '20 most common singular nouns in Moby Dick'
+character_title='Number of mentions of each character in Moby Dick'
+proper_nouns_title='20 most common proper nouns in Moby Dick'
+plotMostCommonWordsBar(nouns_dict, y_label='Num. occurances', x_label='Word', title=nouns_title)
+plotMostCommonWordsBar(singular_nouns_dict, y_label='Num. occurances', x_label='Word', title=singular_nouns_title)
+plotMostCommonWordsBar(sorted_character_count_dict, num_words=len(character_count_dict), y_label='Num. occurances', x_label='Character', title=character_title)
+plotMostCommonWordsBar(proper_nouns_dict, num_words=len(character_count_dict), y_label='Num. occurances', x_label='Proper noun', title=proper_nouns_dict)
+plt.show(block=False)
 
 # pos_tag_meaning_dict = getPOSTagMeaningDict()
 # TODO: Unit test file

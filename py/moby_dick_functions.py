@@ -3,6 +3,7 @@ Functions and globals that are useful for the project.
 """
 import nltk, re
 import numpy as np
+import matplotlib.pyplot as plt
 
 def findMultiple(string, substring):
     """
@@ -144,7 +145,7 @@ def getCharacterList(character_list_file):
         character_list = f.readlines()
     return [character.replace('\n','') for character in character_list]
 
-def getCharacterCounts(text_to_search, character_list):
+def getCharacterCounts(text_to_search, character_list, include_fpp=False):
     """
     For getting counts of the number of times each character is mentioned.
     Arguments:  text_to_search, the text to search for the names
@@ -159,7 +160,7 @@ def getCharacterCounts(text_to_search, character_list):
         if (k in list(character_count_dict)) & (v in list(character_count_dict)):
             character_count_dict[v] += character_count_dict[k]
             del character_count_dict[k]
-    if 'Ishmael' in list(character_count_dict):
+    if include_fpp:
         character_count_dict['Ishmael'] += countFirstPersonPluralMentions(text_to_search)
     return character_count_dict
 
@@ -197,6 +198,35 @@ def posTagWords(words):
         for word in words_to_correct:
             words_tags[np.flatnonzero(words == word),1] = corrected_pos_tag_dict.get(word)
     return words_tags
+
+################################################################################
+########################### PLOTTING FUNCTIONS #################################
+################################################################################
+
+def plotMostCommonWordsBar(sorted_dict, num_words=20, y_label='Num. occurances', x_label='Word', title=''):
+    """
+    For making a bar plot showing the most common words and how often they appear
+    Arguments:  sorted_dict, sorted dictionary of 'word' => number of occurances
+                num_words, how many words to include? top 20?
+    Returns:    nothing
+    """
+    fig,ax = plt.subplots(nrows=1, ncols=1)
+    ax.bar(x=range(num_words), height=list(sorted_dict.values())[:num_words])
+    ax.grid(axis='y', alpha=0.25)
+    ax.set_xlim(-1,num_words)
+    ax.set_xticks(range(num_words))
+    ax.set_xticklabels(list(sorted_dict.keys())[:num_words])
+    ax.tick_params(axis='both', labelsize='large')
+    [tick.set_rotation(45) for tick in ax.get_xticklabels()]
+    ax.set_ylabel(y_label, fontsize='x-large') if y_label != '' else None
+    ax.set_xlabel(x_label, fontsize='x-large') if x_label != '' else None
+    [ax.spines[s].set_visible(False) for s in ['top', 'right']]
+    ax.set_title(title, fontsize='large') if title != '' else None
+    plt.tight_layout()
+
+################################################################################
+######## POS TAGGING DICT ######################################################
+################################################################################
 
 def getPOSTagMeaningDict():
     """
