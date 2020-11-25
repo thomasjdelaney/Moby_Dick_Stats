@@ -4,6 +4,7 @@ Functions and globals that are useful for the project.
 import nltk, re
 import numpy as np
 import matplotlib.pyplot as plt
+from itertools import combinations
 
 def findMultiple(string, substring):
     """
@@ -79,6 +80,8 @@ def getChapterText(moby_dick_text, num_to_chap_title, chapter_number_or_name, nu
     elif str == type(chapter_number_or_name):
         if chapter_number_or_name in special_sections:
             return getSpecialSectionText(moby_dick_text, chapter_number_or_name)
+        if chapter_number_or_name == 'Knights and Squires':
+            raise ValueError(dt.datetime.now().isoformat() + ' ERROR: ' + 'Two different chapters have this title. You must specify the chapter number in this case.')
         chapter_number = list(num_to_chap_title.values()).index(chapter_number_or_name) + 1
     else:
         print(dt.datetime.now().isoformat() + ' ERROR: ' + 'Unrecognised chapter identifier type! Exiting!')
@@ -198,6 +201,33 @@ def posTagWords(words):
         for word in words_to_correct:
             words_tags[np.flatnonzero(words == word),1] = corrected_pos_tag_dict.get(word)
     return words_tags
+
+def getCharacterCoMentions(character_list, num_to_chap_title, moby_dick_text, character_list_with_doubles):
+    """
+    A function for getting a matrix of 'co-mentions' for the characters.
+    That is, a matrix of the number of times each pair of charcters are
+    mentioned in the same chapter.
+    Arguments:  character_list, list of str,
+                num_to_chap_title, dictionary number => chapter_title
+                moby_dick_text, the text,
+                character_list_with_doubles, all the character names
+    Returns:    numpy array int (num characters, num_characters)
+    """
+    num_characters = len(character_list)
+    chapter_names = list(num_to_chap_title.values())
+    num_chapters = len(chapter_names)
+    chapter_mentions = np.zeros([num_characters, num_characters], dtype=int)
+    for i in range(num_chapters):
+        chapter_num = i+1
+        chapter_name = num_to_chap_title.get(chapter_num)
+        chapter_text = getChapterText(moby_dick_text, num_to_chap_title, chapter_num)
+        chapter_character_count_dict = getCharacterCounts(chapter_text, character_list_with_doubles)
+        mentioned_inds = np.flatnonzero(list(chapter_character_count_dict.values()))
+        comention_inds = combinations(mentioned_inds, 2)
+        for c in comention_inds:
+            chapter_mentions[c[0], c[1]] += 1
+    chapter_mentions += chapter_mentions.T
+    return chapter_mentions
 
 ################################################################################
 ########################### PLOTTING FUNCTIONS #################################
