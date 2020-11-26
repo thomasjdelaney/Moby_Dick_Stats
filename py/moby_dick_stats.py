@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from moby_dick_functions import *
 
+np.set_printoptions(linewidth=shutil.get_terminal_size().columns)
+
 proj_dir = os.path.join(os.environ.get('HOME'), 'Moby_Dick_Stats')
 txt_dir = os.path.join(proj_dir, 'txt')
 moby_dick_txt_file = os.path.join(txt_dir, 'moby_dick.txt')
@@ -55,18 +57,10 @@ plotMostCommonWordsBar(proper_nouns_dict, num_words=len(character_count_dict), y
 plt.close('all')
 
 chapter_mentions = getCharacterCoMentions(character_list, num_to_chap_title, moby_dick_text, character_list_with_doubles)
+normed_chapter_mentions = getNormedCharacterCoMentions(character_list, num_to_chap_title, moby_dick_text, character_list_with_doubles)
 # show the matrix
-fig, ax = plt.subplots(nrows=1, ncols=1)
-im = ax.imshow(chapter_mentions, cmap='Blues')
-ax.set_xticks(range(num_characters))
-ax.set_xticklabels(character_list)
-[tick.set_rotation(45) for tick in ax.get_xticklabels()]
-ax.set_yticks(range(num_characters))
-ax.set_yticklabels(character_list)
-[tick.set_rotation(45) for tick in ax.get_yticklabels()]
-ax.set_title('Number of chapters in which both characters of each pair are mentioned', fontsize='large')
-fig.colorbar(im)
-plt.tight_layout()
+plotChapterCoMentions(chapter_mentions, character_list, title='Number of chapters in which both characters of each pair are mentioned')
+plotChapterCoMentions(normed_chapter_mentions, character_list, title='Normed chapter co-mentions')
 plt.show(block=False)
 
 # TODO: Unit test file

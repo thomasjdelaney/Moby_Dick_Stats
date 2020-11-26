@@ -229,6 +229,39 @@ def getCharacterCoMentions(character_list, num_to_chap_title, moby_dick_text, ch
     chapter_mentions += chapter_mentions.T
     return chapter_mentions
 
+def getNormedCharacterCoMentions(character_list, num_to_chap_title, moby_dick_text, character_list_with_doubles):
+    """
+    A function for getting a matrix of normalised 'co-mentions' for the characters.
+    That is, a matrix of the number of times each pair of charcters are
+    mentioned in the same chapter, divided by the combined number of chapters
+    in which each character is mentioned, divided by 2.
+    Arguments:  character_list, list of str,
+                num_to_chap_title, dictionary number => chapter_title
+                moby_dick_text, the text,
+                character_list_with_doubles, all the character names
+    Returns:    numpy array int (num characters, num_characters)
+    """
+    num_characters = len(character_list)
+    chapter_names = list(num_to_chap_title.values())
+    num_chapters = len(chapter_names)
+    chapter_mentions = np.zeros([num_characters, num_characters], dtype=int)
+    total_mentions = np.zeros(num_characters, dtype=int)
+    for i in range(num_chapters):
+        chapter_num = i+1
+        chapter_name = num_to_chap_title.get(chapter_num)
+        chapter_text = getChapterText(moby_dick_text, num_to_chap_title, chapter_num)
+        chapter_character_count_dict = getCharacterCounts(chapter_text, character_list_with_doubles)
+        mentioned_inds = np.flatnonzero(list(chapter_character_count_dict.values()))
+        total_mentions[mentioned_inds] += 1
+        comention_inds = combinations(mentioned_inds, 2)
+        for c in comention_inds:
+            chapter_mentions[c[0], c[1]] += 1
+    normed_chapter_mentions = np.zeros([num_characters, num_characters], dtype=float)
+    for c in combinations(range(num_characters),2):
+        normed_chapter_mentions[c[0],c[1]] = (2*chapter_mentions[c[0], c[1]])/(total_mentions[c[0]] + total_mentions[c[1]])
+    normed_chapter_mentions += normed_chapter_mentions.T
+    return normed_chapter_mentions
+
 ################################################################################
 ########################### PLOTTING FUNCTIONS #################################
 ################################################################################
@@ -252,6 +285,27 @@ def plotMostCommonWordsBar(sorted_dict, num_words=20, y_label='Num. occurances',
     ax.set_xlabel(x_label, fontsize='x-large') if x_label != '' else None
     [ax.spines[s].set_visible(False) for s in ['top', 'right']]
     ax.set_title(title, fontsize='large') if title != '' else None
+    plt.tight_layout()
+
+def plotChapterCoMentions(mentions_matrix, character_list, title=''):
+    """
+    For plotting the matrix of chapter mentions, normalised or otherwise.
+    Arguments:  mentions_matrix, numpy array (num_characters, num_characters)
+                character_list, list of str
+                title,
+    Returns:    Nothing
+    """
+    num_characters = mentions_matrix.shape[0]
+    fig, ax = plt.subplots(nrows=1, ncols=1)
+    im = ax.imshow(mentions_matrix, cmap='Blues')
+    ax.set_xticks(range(num_characters))
+    ax.set_xticklabels(character_list)
+    [tick.set_rotation(45) for tick in ax.get_xticklabels()]
+    ax.set_yticks(range(num_characters))
+    ax.set_yticklabels(character_list)
+    [tick.set_rotation(45) for tick in ax.get_yticklabels()]
+    ax.set_title(title, fontsize='large') if title != '' else None
+    fig.colorbar(im)
     plt.tight_layout()
 
 ################################################################################
