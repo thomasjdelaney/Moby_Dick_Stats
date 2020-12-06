@@ -3,6 +3,8 @@ Functions and globals that are useful for the project.
 """
 import nltk, re
 import numpy as np
+import pandas as pd
+import datetime as dt
 import matplotlib.pyplot as plt
 from itertools import combinations
 
@@ -202,6 +204,37 @@ def posTagWords(words):
             words_tags[np.flatnonzero(words == word),1] = corrected_pos_tag_dict.get(word)
     return words_tags
 
+def getNumMentionsFrame(character_list, num_to_chap_title, moby_dick_text, character_list_with_doubles):
+    """
+    For getting a frame showing the number of times each character is mentioned in each chapter.
+    Arguments:  character_list, list of str,
+                num_to_chap_title, dictionary number => chapter_title
+                moby_dick_text, the text,
+                character_list_with_doubles, all the character names
+    Returns:    pandas dataframe
+    """
+    num_characters = len(character_list)
+    chapter_names = list(num_to_chap_title.values())
+    num_chapters = len(chapter_names)
+    character_mentions_frame = pd.DataFrame(columns=['chapter_num', 'chapter_name'] + character_list)
+    for i in range(num_chapters):
+        chapter_num = i+1
+        chapter_name = num_to_chap_title.get(chapter_num)
+        chapter_text = getChapterText(moby_dick_text, num_to_chap_title, chapter_num)
+        chapter_character_count_dict = getCharacterCounts(chapter_text, character_list_with_doubles)
+        chapter_character_count_dict['chapter_num'] = chapter_num
+        chapter_character_count_dict['chapter_name'] = chapter_name
+        character_mentions_frame = character_mentions_frame.append(chapter_character_count_dict, ignore_index=True)
+    special_sections = ['ETYMOLOGY', 'EXTRACTS', 'Epilogue']
+    special_nums = [-1, 0, 136]
+    for chapter_name, chapter_num in zip(special_sections, special_nums):
+        chapter_text = getSpecialSectionText(moby_dick_text, chapter_name)
+        chapter_character_count_dict = getCharacterCounts(chapter_text, character_list_with_doubles)
+        chapter_character_count_dict['chapter_num'] = chapter_num
+        chapter_character_count_dict['chapter_name'] = chapter_name
+        character_mentions_frame = character_mentions_frame.append(chapter_character_count_dict, ignore_index=True)
+    return character_mentions_frame
+
 def getCharacterCoMentions(character_list, num_to_chap_title, moby_dick_text, character_list_with_doubles):
     """
     A function for getting a matrix of 'co-mentions' for the characters.
@@ -239,7 +272,8 @@ def getNormedCharacterCoMentions(character_list, num_to_chap_title, moby_dick_te
                 num_to_chap_title, dictionary number => chapter_title
                 moby_dick_text, the text,
                 character_list_with_doubles, all the character names
-    Returns:    numpy array int (num characters, num_characters)
+    Returns:    normed_chapter_mentions, numpy array int (num characters, num_characters)
+                total_mentions, numpy array int (num_characters)
     """
     num_characters = len(character_list)
     chapter_names = list(num_to_chap_title.values())
@@ -260,7 +294,7 @@ def getNormedCharacterCoMentions(character_list, num_to_chap_title, moby_dick_te
     for c in combinations(range(num_characters),2):
         normed_chapter_mentions[c[0],c[1]] = (2*chapter_mentions[c[0], c[1]])/(total_mentions[c[0]] + total_mentions[c[1]])
     normed_chapter_mentions += normed_chapter_mentions.T
-    return normed_chapter_mentions
+    return normed_chapter_mentions, total_mentions
 
 ################################################################################
 ########################### PLOTTING FUNCTIONS #################################

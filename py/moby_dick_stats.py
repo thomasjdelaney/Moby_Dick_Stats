@@ -35,6 +35,7 @@ unique_words = list(word_freq_distn)
 character_list_with_doubles = getCharacterList(character_list_file) # contains double names
 character_count_dict = getCharacterCounts(novel_text, character_list_with_doubles)
 character_list = list(character_count_dict.keys())
+character_mentions_frame = getNumMentionsFrame(character_list, num_to_chap_title, moby_dick_text, character_list_with_doubles)
 num_characters = len(character_list)
 loomings_character_count_dict = getCharacterCounts(loomings_text_1, character_list_with_doubles)
 biographical_character_count_dict = getCharacterCounts(getChapterText(moby_dick_text, num_to_chap_title, 'Biographical'), character_list_with_doubles)
@@ -57,12 +58,17 @@ plotMostCommonWordsBar(proper_nouns_dict, num_words=len(character_count_dict), y
 plt.close('all')
 
 chapter_mentions = getCharacterCoMentions(character_list, num_to_chap_title, moby_dick_text, character_list_with_doubles)
-normed_chapter_mentions = getNormedCharacterCoMentions(character_list, num_to_chap_title, moby_dick_text, character_list_with_doubles)
+normed_chapter_mentions, total_mentions = getNormedCharacterCoMentions(character_list, num_to_chap_title, moby_dick_text, character_list_with_doubles)
+sorted_inds = np.argsort(total_mentions)
+sorted_chapter_mentions = chapter_mentions[:,sorted_inds[::-1]]; sorted_chapter_mentions = sorted_chapter_mentions[sorted_inds[::-1],:]
+sorted_normed_chapter_mentions = normed_chapter_mentions[:,sorted_inds[::-1]]; sorted_normed_chapter_mentions = sorted_normed_chapter_mentions[sorted_inds[::-1],:]
+sorted_character_list = np.array(character_list)[sorted_inds[::-1]]
 # show the matrix
-plotChapterCoMentions(chapter_mentions, character_list, title='Number of chapters in which both characters of each pair are mentioned')
-plotChapterCoMentions(normed_chapter_mentions, character_list, title='Normed chapter co-mentions')
+plotChapterCoMentions(sorted_chapter_mentions, sorted_character_list, title='Number of chapters in which both characters of each pair are mentioned')
+plotChapterCoMentions(sorted_normed_chapter_mentions, sorted_character_list, title='Normed chapter co-mentions')
 plt.show(block=False)
 
-# TODO: Unit test file
+# TODO: Apply Spectral detection to the normed chapter comentions matrix
+#       Unit test file
 #       Extract proper nouns
 #       Link for understanding 'part-of-speech' tags: https://www.guru99.com/pos-tagging-chunking-nltk.html
