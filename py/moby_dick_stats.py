@@ -12,6 +12,7 @@ np.set_printoptions(linewidth=shutil.get_terminal_size().columns)
 
 proj_dir = os.path.join(os.environ.get('HOME'), 'Moby_Dick_Stats')
 txt_dir = os.path.join(proj_dir, 'txt')
+image_dir = os.path.join(proj_dir, 'images')
 moby_dick_txt_file = os.path.join(txt_dir, 'moby_dick.txt')
 character_list_file = os.path.join(txt_dir, 'character_list.txt')
 

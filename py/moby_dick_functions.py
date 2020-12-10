@@ -321,7 +321,7 @@ def plotMostCommonWordsBar(sorted_dict, num_words=20, y_label='Num. occurances',
     ax.set_title(title, fontsize='large') if title != '' else None
     plt.tight_layout()
 
-def plotChapterCoMentions(mentions_matrix, character_list, title=''):
+def plotChapterCoMentions(mentions_matrix, character_list, title='', figsize=(5,4)):
     """
     For plotting the matrix of chapter mentions, normalised or otherwise.
     Arguments:  mentions_matrix, numpy array (num_characters, num_characters)
@@ -330,7 +330,7 @@ def plotChapterCoMentions(mentions_matrix, character_list, title=''):
     Returns:    Nothing
     """
     num_characters = mentions_matrix.shape[0]
-    fig, ax = plt.subplots(nrows=1, ncols=1)
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=figsize)
     im = ax.imshow(mentions_matrix, cmap='Blues')
     ax.set_xticks(range(num_characters))
     ax.set_xticklabels(character_list)
