@@ -6,6 +6,7 @@ import datetime as dt
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+import networkx as nx
 from moby_dick_functions import *
 
 np.set_printoptions(linewidth=shutil.get_terminal_size().columns)
@@ -56,7 +57,6 @@ plotMostCommonWordsBar(nouns_dict, y_label='Num. occurances', x_label='Word', ti
 plotMostCommonWordsBar(singular_nouns_dict, y_label='Num. occurances', x_label='Word', title=singular_nouns_title)
 plotMostCommonWordsBar(sorted_character_count_dict, num_words=len(character_count_dict), y_label='Num. occurances', x_label='Character', title=character_title)
 plotMostCommonWordsBar(proper_nouns_dict, num_words=len(character_count_dict), y_label='Num. occurances', x_label='Proper noun', title=proper_nouns_dict)
-plt.close('all')
 
 chapter_mentions = getCharacterCoMentions(character_list, num_to_chap_title, moby_dick_text, character_list_with_doubles)
 normed_chapter_mentions, total_mentions = getNormedCharacterCoMentions(character_list, num_to_chap_title, moby_dick_text, character_list_with_doubles)
@@ -67,8 +67,23 @@ sorted_character_list = np.array(character_list)[sorted_inds[::-1]]
 # show the matrix
 plotChapterCoMentions(sorted_chapter_mentions, sorted_character_list, title='Number of chapters in which both characters of each pair are mentioned')
 plotChapterCoMentions(sorted_normed_chapter_mentions, sorted_character_list, title='Normed chapter co-mentions')
-plt.show(block=False)
+plt.close('all')
 
+sorted_character_edges = np.nonzero(np.triu(sorted_normed_chapter_mentions))
+sorted_character_edges_list = list(zip(sorted_character_edges[0], sorted_character_edges[1]))
+
+character_connections = nx.Graph()
+edge_weights = []
+for source, target in sorted_character_edges_list:
+    character_connections.add_edge(sorted_character_list[source], sorted_character_list[target], weight=sorted_normed_chapter_mentions[source, target])
+    edge_weights.append(sorted_normed_chapter_mentions[source, target])
+
+nx.draw_circular(character_connections, with_labels=True, node_size=300, node_color='white', edge_cmap=cm.Blues, edge_color=edge_weights, font_weight='bold')
+plt.show(block=False)
+# positions = nx.circular_layout(character_connections
+# nx.draw_networkx_nodes(character_connections, positions, alpha=0.35, node_size=100)
+# nx.draw_networkx_edges(character_connections, positions, edge_cmap=cm.Blues, edge_color=edge_weights)
+# nx.draw_networkx_labels(character_connections, positions)
 # TODO: Apply Spectral detection to the normed chapter comentions matrix
 #       Unit test file
 #       Extract proper nouns
