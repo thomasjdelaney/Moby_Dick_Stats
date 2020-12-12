@@ -9,6 +9,12 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from moby_dick_functions import *
 
+parser = argparse.ArgumentParser('Script for spectral rejection and detecting communities in the mentions matrix.')
+parser.add_argument('-n', '--is_normed', help='Use the normed version of the mentions matrix.', default=False, action='store_true')
+parser.add_argument('-i', '--ishmael_every_chapter', help='Regard Ishmael as being mentioned in every chapter.', default=False, action='store_true')
+parser.add_argument('-d', '--debug', help='Enter debug mode.', default=False, action='store_true')
+args = parser.parse_args()
+
 np.set_printoptions(linewidth=shutil.get_terminal_size().columns)
 
 proj_dir = os.path.join(os.environ.get('HOME'), 'Moby_Dick_Stats')

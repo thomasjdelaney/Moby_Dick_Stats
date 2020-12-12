@@ -342,6 +342,22 @@ def plotChapterCoMentions(mentions_matrix, character_list, title='', figsize=(5,
     fig.colorbar(im)
     plt.tight_layout()
 
+def plotMentionsNetworkGraph(mentions_matrix, character_list, figsize=(10,10)):
+    """
+    For plotting a network graph of the network formed by the mentions matrix.
+    Arguments:  mentions_matrix, square matrix containing character comentions
+                character_list, list of str
+    Returns:    nothing
+    """
+    mention_edges = np.nonzero(np.triu(mentions_matrix))
+    mention_edges_list = list(zip(mention_edges[0], mention_edges[1]))
+    character_connections = nx.Graph()
+    edge_weights = []
+    for source, target in mention_edges_list:
+        character_connections.add_edge(character_list[source], character_list[target], weight=mentions_matrix[source, target])
+        edge_weights.append(mentions_matrix[source, target])
+    nx.draw_circular(character_connections, with_labels=True, node_size=300, node_color='white', edge_cmap=cm.Blues, edge_color=edge_weights, font_weight='bold')
+
 ################################################################################
 ######## POS TAGGING DICT ######################################################
 ################################################################################

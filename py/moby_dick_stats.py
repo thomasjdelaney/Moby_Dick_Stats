@@ -69,22 +69,13 @@ plotChapterCoMentions(sorted_chapter_mentions, sorted_character_list, title='Num
 plotChapterCoMentions(sorted_normed_chapter_mentions, sorted_character_list, title='Normed chapter co-mentions')
 plt.close('all')
 
-sorted_character_edges = np.nonzero(np.triu(sorted_normed_chapter_mentions))
-sorted_character_edges_list = list(zip(sorted_character_edges[0], sorted_character_edges[1]))
-
-character_connections = nx.Graph()
-edge_weights = []
-for source, target in sorted_character_edges_list:
-    character_connections.add_edge(sorted_character_list[source], sorted_character_list[target], weight=sorted_normed_chapter_mentions[source, target])
-    edge_weights.append(sorted_normed_chapter_mentions[source, target])
-
-nx.draw_circular(character_connections, with_labels=True, node_size=300, node_color='white', edge_cmap=cm.Blues, edge_color=edge_weights, font_weight='bold')
+plotMentionsNetworkGraph(sorted_normed_chapter_mentions, sorted_character_list)
 plt.show(block=False)
+
 # positions = nx.circular_layout(character_connections
 # nx.draw_networkx_nodes(character_connections, positions, alpha=0.35, node_size=100)
 # nx.draw_networkx_edges(character_connections, positions, edge_cmap=cm.Blues, edge_color=edge_weights)
 # nx.draw_networkx_labels(character_connections, positions)
-# TODO: Apply Spectral detection to the normed chapter comentions matrix
+# TODO: implement options in the cluster_characters script.
 #       Unit test file
-#       Extract proper nouns
 #       Link for understanding 'part-of-speech' tags: https://www.guru99.com/pos-tagging-chunking-nltk.html
