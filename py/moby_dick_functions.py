@@ -6,6 +6,8 @@ import numpy as np
 import pandas as pd
 import datetime as dt
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+import networkx as nx
 from itertools import combinations
 
 def findMultiple(string, substring):
@@ -235,7 +237,16 @@ def getNumMentionsFrame(character_list, num_to_chap_title, moby_dick_text, chara
         character_mentions_frame = character_mentions_frame.append(chapter_character_count_dict, ignore_index=True)
     return character_mentions_frame
 
-def getCharacterCoMentions(character_list, num_to_chap_title, moby_dick_text, character_list_with_doubles):
+def ishmaelIsChapterNarrator(chapter_name):
+    """
+    Is Ishmael the narrator of the given chapter?
+    Arguments:  chapter_name, str
+    Returns:    boolean
+    """
+    different_narrator_chapters = ['Sunset', 'Dusk', 'First Night-Watch', 'Midnight, Forecastle']
+    return not chapter_name in different_narrator_chapters
+
+def getCharacterCoMentions(character_list, num_to_chap_title, moby_dick_text, character_list_with_doubles, narrator_ishmael):
     """
     A function for getting a matrix of 'co-mentions' for the characters.
     That is, a matrix of the number of times each pair of charcters are
@@ -244,25 +255,31 @@ def getCharacterCoMentions(character_list, num_to_chap_title, moby_dick_text, ch
                 num_to_chap_title, dictionary number => chapter_title
                 moby_dick_text, the text,
                 character_list_with_doubles, all the character names
+                narrator_ishmael, boolean, include ishmael as the narrator or not.
     Returns:    numpy array int (num characters, num_characters)
+                total_mentions, numpy array int (num_characters)
     """
     num_characters = len(character_list)
     chapter_names = list(num_to_chap_title.values())
     num_chapters = len(chapter_names)
     chapter_mentions = np.zeros([num_characters, num_characters], dtype=int)
+    total_mentions = np.zeros(num_characters, dtype=int)
     for i in range(num_chapters):
         chapter_num = i+1
         chapter_name = num_to_chap_title.get(chapter_num)
         chapter_text = getChapterText(moby_dick_text, num_to_chap_title, chapter_num)
         chapter_character_count_dict = getCharacterCounts(chapter_text, character_list_with_doubles)
+        if narrator_ishmael & ishmaelIsChapterNarrator(chapter_name):
+            chapter_character_count_dict['Ishmael'] = 1
         mentioned_inds = np.flatnonzero(list(chapter_character_count_dict.values()))
         comention_inds = combinations(mentioned_inds, 2)
+        total_mentions[mentioned_inds] += 1
         for c in comention_inds:
             chapter_mentions[c[0], c[1]] += 1
     chapter_mentions += chapter_mentions.T
-    return chapter_mentions
+    return chapter_mentions, total_mentions
 
-def getNormedCharacterCoMentions(character_list, num_to_chap_title, moby_dick_text, character_list_with_doubles):
+def getNormedCharacterCoMentions(character_list, num_to_chap_title, moby_dick_text, character_list_with_doubles, narrator_ishmael):
     """
     A function for getting a matrix of normalised 'co-mentions' for the characters.
     That is, a matrix of the number of times each pair of charcters are
@@ -272,6 +289,7 @@ def getNormedCharacterCoMentions(character_list, num_to_chap_title, moby_dick_te
                 num_to_chap_title, dictionary number => chapter_title
                 moby_dick_text, the text,
                 character_list_with_doubles, all the character names
+                narrator_ishmael, boolean, include ishmael as the narrator or not.
     Returns:    normed_chapter_mentions, numpy array int (num characters, num_characters)
                 total_mentions, numpy array int (num_characters)
     """
@@ -285,6 +303,8 @@ def getNormedCharacterCoMentions(character_list, num_to_chap_title, moby_dick_te
         chapter_name = num_to_chap_title.get(chapter_num)
         chapter_text = getChapterText(moby_dick_text, num_to_chap_title, chapter_num)
         chapter_character_count_dict = getCharacterCounts(chapter_text, character_list_with_doubles)
+        if narrator_ishmael & ishmaelIsChapterNarrator(chapter_name):
+            chapter_character_count_dict['Ishmael'] = 1
         mentioned_inds = np.flatnonzero(list(chapter_character_count_dict.values()))
         total_mentions[mentioned_inds] += 1
         comention_inds = combinations(mentioned_inds, 2)

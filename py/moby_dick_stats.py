@@ -5,8 +5,6 @@ import os, sys, argparse, re, nltk, shutil
 import datetime as dt
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm
-import networkx as nx
 from moby_dick_functions import *
 
 np.set_printoptions(linewidth=shutil.get_terminal_size().columns)
